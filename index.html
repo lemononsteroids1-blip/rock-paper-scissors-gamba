@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weapon Hands - Solana Battle Arena</title>
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        .logo {
+            font-size: 3.5rem;
+            font-weight: bold;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 15px;
+            text-shadow: 0 0 30px rgba(255, 107, 107, 0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.5)); }
+            to { filter: drop-shadow(0 0 30px rgba(78, 205, 196, 0.8)); }
+        }
+
+        .tagline {
+            font-size: 1.3rem;
+            color: #4ecdc4;
+            margin-bottom: 25px;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+        }
+
+        .wallet-section {
+            background: rgba(255, 107, 107, 0.1);
+            border: 2px solid #ff6b6b;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 35px;
+            text-align: center;
+            backdrop-filter: blur(15px);
+            box-shadow: 0 8px 32px rgba(255, 107, 107, 0.2);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            border: none;
+            padding: 15px 35px;
+            border-radius: 30px;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.1rem;
+            margin: 8px;
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(255, 107, 107, 0.4);
+            background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .game-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .game-panel {
+            background: rgba(255, 255, 255, 0.08);
+            border: 2px solid rgba(255, 107, 107, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            backdrop-filter: blur(20px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .game-panel:hover {
+            border-color: rgba(78, 205, 196, 0.5);
+            box-shadow: 0 12px 40px rgba(78, 205, 196, 0.2);
+        }
+
+        .panel-title {
+            font-size: 1.8rem;
+            margin-bottom: 25px;
+            color: #ff6b6b;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+            font-weight: bold;
+        }
+
+        .bet-controls {
+            margin-bottom: 20px;
+        }
+
+        .bet-presets {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .bet-btn {
+            background: rgba(255, 107, 107, 0.2);
+            border: 2px solid #ff6b6b;
+            padding: 12px 20px;
+            border-radius: 25px;
+            color: #ff6b6b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .bet-btn:hover, .bet-btn.active {
+            background: #ff6b6b;
+            color: white;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+        }
+
+        .custom-bet {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #4ecdc4;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1.1rem;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+        }
+
+        .custom-bet:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+            outline: none;
+        }
+
+        .weapon-selection {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+
+
+
+        .weapon:hover {
+            border-color: #4ecdc4;
+            transform: scale(1.1);
+            box-shadow: 0 10px 25px rgba(78, 205, 196, 0.3);
+        }
+
+        .weapon.selected {
+            border-color: #ff6b6b !important;
+            background: rgba(255, 107, 107, 0.4) !important;
+            box-shadow: 0 0 40px rgba(255, 107, 107, 0.8) !important;
+            transform: scale(1.15) !important;
+            animation: intenseRedGlow 1.5s ease-in-out infinite alternate;
+        }
+
+        @keyframes intenseRedGlow {
+            0% {
+                box-shadow: 0 0 60px rgba(255, 107, 107, 1), 0 0 80px rgba(255, 107, 107, 0.6);
+                border-color: #ff6b6b;
+            }
+            100% {
+                box-shadow: 0 0 80px rgba(255, 107, 107, 1), 0 0 120px rgba(255, 107, 107, 0.8);
+                border-color: #ff4444;
+            }
+        }
+
+        .weapon {
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid transparent;
+            border-radius: 20px;
+            padding: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            min-width: 120px;
+            backdrop-filter: blur(10px);
+            animation: redGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes redGlow {
+            0% {
+                box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+                border-color: rgba(255, 107, 107, 0.3);
+            }
+            100% {
+                box-shadow: 0 0 40px rgba(255, 107, 107, 0.8);
+                border-color: rgba(255, 107, 107, 0.6);
+            }
+        }
+
+        .weapon-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.3));
+        }
+
+        .weapon-name {
+            font-weight: bold;
+            color: #4ecdc4;
+            font-size: 1.1rem;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .balance-display {
+            font-size: 1.2rem;
+            color: #4ecdc4;
+            margin-top: 15px;
+            text-shadow: 0 0 10px rgba(78, 205, 196, 0.3);
+            font-weight: bold;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 10000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #ff6b6b;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            min-width: 400px;
+            text-align: center;
+        }
+
+        .modal h3 {
+            color: #ff6b6b;
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+
+        .amount-input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #4ecdc4;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-size: 1.2rem;
+            text-align: center;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .amount-input:focus {
+            border-color: #ff6b6b;
+            box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+            outline: none;
+        }
+
+        .quick-amounts {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .quick-amount {
+            background: rgba(78, 205, 196, 0.2);
+            border: 2px solid #4ecdc4;
+            padding: 10px 15px;
+            border-radius: 10px;
+            color: #4ecdc4;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        .quick-amount:hover {
+            background: #4ecdc4;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn-cancel {
+            background: #666;
+        }
+
+        .btn-cancel:hover {
+            background: #555;
+        }
+
+        .tos-modal {
+            display: block;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 20000;
+        }
+
+        .tos-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #ff6b6b;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7);
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        .tos-content h2 {
+            color: #ff6b6b;
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2rem;
+            text-shadow: 0 0 15px rgba(255, 107, 107, 0.5);
+        }
+
+        .tos-content p {
+            color: #ffffff;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .tos-content ul {
+            color: #ffffff;
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+
+        .tos-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn-accept {
+            background: linear-gradient(45deg, #27ae60, #2ecc71);
+        }
+
+
+
+        @media (max-width: 768px) {
+            .game-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .weapon-selection {
+                flex-direction: column;
+                gap: 10px;
+            }
+            
+            .bet-presets {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">⚡ RPS.SOL ⚡</div>
+            <div class="tagline">Solana Gambling Platform</div>
+        </div>
+
+        <div class="wallet-section">
+            <button id="connectWallet" class="btn">Connect Wallet</button>
+            <div id="walletInfo" class="hidden">
+                <div class="balance-display">
+                    <span id="walletAddress"></span> | Balance: <span id="walletBalance">0 SOL</span>
+                </div>
+                <button id="depositBtn" class="btn">💰 Deposit</button>
+                <button id="withdrawBtn" class="btn">💸 Withdraw</button>
+            </div>
+        </div>
+
+        <div class="game-section">
+            <div class="game-panel">
+                <div class="panel-title">Create New Game</div>
+                
+                <div class="bet-controls">
+                    <div class="bet-presets">
+                        <div class="bet-btn" data-amount="0.1">0.1 SOL</div>
+                        <div class="bet-btn" data-amount="0.25">0.25 SOL</div>
+                        <div class="bet-btn" data-amount="0.5">0.5 SOL</div>
+                        <div class="bet-btn" data-amount="1">1 SOL</div>
+                    </div>
+                    <input type="number" id="customBet" class="custom-bet" placeholder="Custom bet amount (SOL)" min="0.1" max="1" step="0.01">
+                </div>
+
+                <div class="weapon-selection">
+                    <div class="weapon" data-weapon="rock">
+                        <div class="weapon-icon">🪨</div>
+                        <div class="weapon-name">Rock</div>
+                    </div>
+                    <div class="weapon" data-weapon="paper">
+                        <div class="weapon-icon">📄</div>
+                        <div class="weapon-name">Paper</div>
+                    </div>
+                    <div class="weapon" data-weapon="scissors">
+                        <div class="weapon-icon">✂️</div>
+                        <div class="weapon-name">Scissors</div>
+                    </div>
+                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+                    <button id="createGame" class="btn" disabled>Create Game</button>
+                </div>
+            </div>
+
+            <div class="game-panel">
+                <div class="panel-title">🔥 Active Games</div>
+                <div id="gamesList" style="max-height: 300px; overflow-y: auto;">
+                    <div style="text-align: center; color: #4ecdc4; padding: 30px; font-size: 1.1rem;">
+                        🎯 No active games found<br>
+                        <small style="color: #666; margin-top: 10px; display: block;">Create a game to get started!</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Deposit Modal -->
+    <div id="depositModal" class="modal">
+        <div class="modal-content">
+            <h3>💰 Deposit SOL</h3>
+            <input type="number" id="depositAmount" class="amount-input" placeholder="Enter amount (SOL)" min="0.01" step="0.01">
+            <div class="quick-amounts">
+                <div class="quick-amount" data-amount="0.1">0.1</div>
+                <div class="quick-amount" data-amount="0.5">0.5</div>
+                <div class="quick-amount" data-amount="1">1.0</div>
+                <div class="quick-amount" data-amount="5">5.0</div>
+            </div>
+            <div class="modal-buttons">
+                <button id="confirmDeposit" class="btn">🚀 Confirm Deposit</button>
+                <button id="cancelDeposit" class="btn btn-cancel">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="modal">
+        <div class="modal-content">
+            <h3>💸 Withdraw SOL</h3>
+            <input type="number" id="withdrawAmount" class="amount-input" placeholder="Enter amount (SOL)" min="0.01" step="0.01">
+            <div class="quick-amounts">
+                <div class="quick-amount" data-amount="0.1">0.1</div>
+                <div class="quick-amount" data-amount="0.5">0.5</div>
+                <div class="quick-amount" data-amount="1">1.0</div>
+                <div class="quick-amount" data-amount="5">5.0</div>
+            </div>
+            <div class="modal-buttons">
+                <button id="confirmWithdraw" class="btn">💸 Confirm Withdraw</button>
+                <button id="cancelWithdraw" class="btn btn-cancel">❌ Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms of Service Modal -->
+    <div id="tosModal" class="tos-modal">
+        <div class="tos-content">
+            <h2>⚠️ Terms of Service</h2>
+            <p><strong>Age Requirement:</strong> You must be at least 18 years old to use this platform.</p>
+            
+            <p><strong>Gambling Disclaimer:</strong> This platform involves cryptocurrency gambling. Please be aware of the following:</p>
+            <ul>
+                <li>Gambling can be addictive and may result in financial loss</li>
+                <li>Only gamble with funds you can afford to lose</li>
+                <li>This platform is for entertainment purposes only</li>
+                <li>We are not responsible for any losses incurred</li>
+            </ul>
+            
+            <p><strong>Legal Compliance:</strong> By using this platform, you confirm that:</p>
+            <ul>
+                <li>Online gambling is legal in your jurisdiction</li>
+                <li>You are not accessing this site from a restricted location</li>
+                <li>You understand the risks involved in cryptocurrency gambling</li>
+            </ul>
+            
+            <p><strong>Cryptocurrency Risks:</strong> Cryptocurrency values are volatile and transactions are irreversible. Use at your own risk.</p>
+            
+            <p><strong>By clicking "I Accept", you confirm that you are 18+ years old and agree to these terms.</strong></p>
+            
+            <div class="tos-buttons">
+                <button id="acceptTos" class="btn btn-accept">✅ I Accept (18+)</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
