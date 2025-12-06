@@ -1,9 +1,8 @@
 {
-  "outputDirectory": "web",
   "rewrites": [
     {
       "source": "/(.*)",
-      "destination": "/web/$1"
+      "destination": "/$1"
     }
   ]
 }
