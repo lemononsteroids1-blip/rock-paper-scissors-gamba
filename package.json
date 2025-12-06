@@ -1,0 +1,14 @@
+{
+  "name": "rps-sol",
+  "version": "1.0.0",
+  "description": "RPS.SOL - Rock Paper Scissors gambling game on Solana",
+  "main": "web/index.html",
+  "scripts": {
+    "dev": "node web/server.js",
+    "build": "echo 'Static site - no build needed'",
+    "start": "node web/server.js"
+  },
+  "keywords": ["solana", "gambling", "rock-paper-scissors", "blockchain"],
+  "author": "Your Name",
+  "license": "MIT"
+}
